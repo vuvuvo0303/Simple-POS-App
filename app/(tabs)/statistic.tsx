@@ -1,86 +1,260 @@
-import { View, Text, ScrollView, Dimensions } from "react-native";
-import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { PieChart, BarChart } from "react-native-chart-kit";
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { LineChart } from 'react-native-chart-kit';
 
-const screenWidth = Dimensions.get("window").width;
+const API_URL = 'http://192.168.2.8:5000/api';
 
-const Statistic = () => {
-  const pieData = [
-    { name: "Pizza", population: 35, color: "tomato", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-    { name: "Burger", population: 40, color: "orange", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-    { name: "Pasta", population: 25, color: "gold", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-  ];
+interface TopProduct {
+  _id: string;
+  name: string;
+  totalQuantity: number;
+  totalRevenue: number;
+}
 
-  const barData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+interface DailySales {
+  date: string;
+  total: number;
+}
+
+interface Statistics {
+  totalRevenue: number;
+  totalOrders: number;
+  averageOrderValue: number;
+  dailySales: DailySales[];
+  topProducts: TopProduct[];
+}
+
+export default function Statistic() {
+  const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
+  const [statistics, setStatistics] = useState<Statistics>({
+    totalRevenue: 0,
+    totalOrders: 0,
+    averageOrderValue: 0,
+    dailySales: [],
+    topProducts: []
+  });
+
+  useEffect(() => {
+    fetchStatistics();
+  }, [timeRange]);
+
+  const fetchStatistics = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/orders/stats/dashboard?range=${timeRange}`);
+      setStatistics(response.data);
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+    }
+  };
+
+  const chartData = {
+    labels: statistics.dailySales.map(item => item.date),
     datasets: [
       {
-        data: [30, 45, 28, 80, 99, 43, 50, 60, 70, 90, 100, 120],
-      },
-    ],
+        data: statistics.dailySales.map(item => item.total),
+        color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+        strokeWidth: 2
+      }
+    ]
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 16, backgroundColor: "white" }}>
-      <ScrollView>
-        <View style={{ marginBottom: 30 }}>
-          <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 8 }}>Sales Distribution</Text>
-          <PieChart
-            data={pieData}
-            width={screenWidth - 32}
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      
+
+      {/* Summary Cards */}
+      <View style={styles.summaryContainer}>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Tổng doanh thu</Text>
+          <Text style={styles.summaryValue}>
+            ${statistics.totalRevenue.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Tổng đơn hàng</Text>
+          <Text style={styles.summaryValue}>{statistics.totalOrders}</Text>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>Trung bình/đơn</Text>
+          <Text style={styles.summaryValue}>
+            ${statistics.averageOrderValue.toFixed(2)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Revenue Chart */}
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Doanh thu theo ngày</Text>
+        {statistics.dailySales.length > 0 ? (
+          <LineChart
+            data={chartData}
+            width={Dimensions.get('window').width - 32}
             height={220}
             chartConfig={{
-              backgroundColor: "#1cc910",
-              backgroundGradientFrom: "#eff3ff",
-              backgroundGradientTo: "#efefef",
+              backgroundColor: '#ffffff',
+              backgroundGradientFrom: '#ffffff',
+              backgroundGradientTo: '#ffffff',
               decimalPlaces: 2,
               color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               style: {
-                borderRadius: 16,
+                borderRadius: 16
               },
+              propsForDots: {
+                r: '6',
+                strokeWidth: '2',
+                stroke: '#ffa726'
+              }
             }}
-            accessor={"population"}
-            backgroundColor={"transparent"}
-            paddingLeft={"15"}
-            absolute
+            bezier
+            style={styles.chart}
           />
-        </View>
+        ) : (
+          <Text style={styles.noDataText}>Không có dữ liệu</Text>
+        )}
+      </View>
 
-        <View style={{ marginBottom: 32 }}>
-          <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 8 }}>Monthly Orders</Text>
-          <BarChart
-            data={barData}
-            width={screenWidth - 32}
-            height={220}
-            chartConfig={{
-              backgroundColor: "#1cc910",
-              backgroundGradientFrom: "#eff3ff",
-              backgroundGradientTo: "#efefef",
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              style: {
-                borderRadius: 16,
-              },
-            }}
-            style={{
-              marginVertical: 8,
-              borderRadius: 16,
-            }}
-          />
-        </View>
-
-        <View style={{ marginBottom: 100 }}>
-          <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 8 }}>Summary</Text>
-          <View style={{ backgroundColor: "#f0f0f0", padding: 16, borderRadius: 8 }}>
-            <Text style={{ fontSize: 18 }}>Total Sales: $100,000</Text>
-            <Text style={{ fontSize: 18 }}>Total Orders: 500</Text>
-            <Text style={{ fontSize: 18 }}>Average Order Value: $200</Text>
+      {/* Top Products */}
+      <View style={styles.topProductsContainer} >
+        <Text style={styles.sectionTitle}>Top 5 sản phẩm bán chạy</Text>
+        {statistics.topProducts.map((product, index) => (
+          <View key={product._id} style={styles.productItem}>
+            <Text style={styles.productRank}>{index + 1}</Text>
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productStats}>
+                Đã bán: {product.totalQuantity} | Doanh thu: ${product.totalRevenue.toFixed(2)}
+              </Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        ))}
+      </View>
+    </ScrollView>
   );
-};
+}
 
-export default Statistic;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5'
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0'
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16
+  },
+  timeRangeContainer: {
+    flexDirection: 'row',
+    gap: 12
+  },
+  timeRangeButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0'
+  },
+  activeTimeRange: {
+    backgroundColor: '#6200ee'
+  },
+  timeRangeText: {
+    color: '#666'
+  },
+  activeTimeRangeText: {
+    color: '#fff'
+  },
+  summaryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    gap: 12
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    elevation: 2
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8
+  },
+  summaryValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333'
+  },
+  chartContainer: {
+    backgroundColor: '#fff',
+    margin: 16,
+    padding: 16,
+    borderRadius: 8,
+    elevation: 2
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16
+  },
+  chart: {
+    borderRadius: 8,
+    marginVertical: 8
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: '#666',
+    marginVertical: 16
+  },
+  topProductsContainer: {
+    backgroundColor: '#fff',
+    margin: 16,
+    padding: 16,
+    borderRadius: 8,
+    elevation: 2
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16
+  },
+  productItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0'
+  },
+  productRank: {
+    width: 24,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#6200ee'
+  },
+  productInfo: {
+    flex: 1
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 4
+  },
+  productStats: {
+    fontSize: 14,
+    color: '#666'
+  }
+});
