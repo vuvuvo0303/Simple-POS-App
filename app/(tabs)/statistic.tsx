@@ -70,7 +70,7 @@ const Statistic = () => {
           />
         </View>
 
-        <View style={{ marginBottom: 32 }}>
+        <View style={{ marginBottom: 100 }}>
           <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 8 }}>Summary</Text>
           <View style={{ backgroundColor: "#f0f0f0", padding: 16, borderRadius: 8 }}>
             <Text style={{ fontSize: 18 }}>Total Sales: $100,000</Text>

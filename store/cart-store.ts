@@ -1,8 +1,8 @@
-import { Food } from "@/types/product";
+import { Product } from "@/types/product";
 import { create } from "zustand";
 type CartState = {
-  cart: (Food & { quantity: number })[];
-  addToCart: (foodItem: Food, quantity: number) => void;
+  cart: (Product & { quantity: number })[];
+  addToCart: (foodItem: Product, quantity: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   paymentMethod: "cash" | "qr";
@@ -13,11 +13,11 @@ const useCartStore = create<CartState>((set) => ({
   paymentMethod: "cash",
   addToCart: (foodItem, quantity) =>
     set((state) => {
-      const existingItem = state.cart.find((item) => item.id === foodItem.id);
+      const existingItem = state.cart.find((item) => item._id === foodItem._id);
       if (existingItem) {
         return {
           cart: state.cart.map((item) =>
-            item.id === foodItem.id ? { ...item, quantity: item.quantity + quantity } : item
+            item._id === foodItem._id ? { ...item, quantity: item.quantity + quantity } : item
           ),
         };
       }
@@ -25,11 +25,11 @@ const useCartStore = create<CartState>((set) => ({
     }),
   removeFromCart: (id) =>
     set((state) => ({
-      cart: state.cart.filter((item) => item.id !== id),
+      cart: state.cart.filter((item) => item._id !== id),
     })),
   updateQuantity: (id, quantity) =>
     set((state) => ({
-      cart: state.cart.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item)),
+      cart: state.cart.map((item) => (item._id === id ? { ...item, quantity: Math.max(1, quantity) } : item)),
     })),
   setPaymentMethod: (method) => set({ paymentMethod: method }),
 }));

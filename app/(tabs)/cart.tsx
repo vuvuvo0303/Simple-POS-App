@@ -1,17 +1,17 @@
 import { View, Text, FlatList, Alert, TextInput, Image, TouchableOpacity, ScrollView } from "react-native";
 import React, { useState } from "react";
-import useStore from "@/store/cart-store";
 import { Product } from "@/types/product";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 import { Link, router } from "expo-router";
+import useCartStore from "@/store/cart-store";
 
 const Cart = () => {
   const [selectedValue, setSelectedValue] = useState<"cash" | "qr">("cash");
-  const setPaymentMethod = useStore((state) => state.setPaymentMethod);
-  const cart = useStore((state) => state.cart);
-  const removeFromCart = useStore((state) => state.removeFromCart);
-  const updateQuantity = useStore((state) => state.updateQuantity);
+  const setPaymentMethod = useCartStore((state) => state.setPaymentMethod);
+  const cart = useCartStore((state) => state.cart);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const options: {
     label: string;

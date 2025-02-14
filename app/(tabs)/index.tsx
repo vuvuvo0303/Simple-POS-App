@@ -21,10 +21,10 @@ export default function HomeScreen() {
         const result = await getAllProducts();
         if (!result.error) {
           setProducts(result.data!);
-          setIsLoading(false);
         } else {
           alert(result.error);
         }
+        setIsLoading(false);
       };
       fetchData();
     }, [])
@@ -59,7 +59,7 @@ export default function HomeScreen() {
 
       {/* Danh sách món ăn */}
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <View className="flex flex-wrap flex-row justify-between">
+        <View className="flex flex-wrap flex-row justify-between" style={{ marginBottom: 100 }}>
           {products.map((food) => (
             <View key={food._id} style={{ width: "48%", marginBottom: 10 }}>
               <ProductCard product={food} />
