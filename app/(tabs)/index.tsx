@@ -1,15 +1,39 @@
-import React, { useState } from "react";
-import FoodCard from "@/components/FoodCard";
+import React, { useEffect, useState } from "react";
 import { foodData } from "@/data/food-data";
 import { View, Text, TextInput, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Entypo, FontAwesome6 } from "@expo/vector-icons";
+import ProductCard from "@/components/ProductCard";
+import { Product } from "@/types/product";
+import { getAllProducts } from "@/lib/api/product-api";
+import Loader from "@/components/Loader";
+import { useFocusEffect } from "expo-router";
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        setIsLoading(true);
+        const result = await getAllProducts();
+        if (!result.error) {
+          setProducts(result.data!);
+          setIsLoading(false);
+        } else {
+          alert(result.error);
+        }
+      };
+      fetchData();
+    }, [])
+  );
 
   const filteredFoodData = foodData.filter((food) => food.name.toLowerCase().includes(search.toLowerCase()));
-
+  if (isLoading) {
+    return <Loader />;
+  }
   return (
     <SafeAreaView className="flex-1 p-4">
       {/* Header */}
@@ -36,9 +60,9 @@ export default function HomeScreen() {
       {/* Danh sách món ăn */}
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View className="flex flex-wrap flex-row justify-between">
-          {filteredFoodData.map((food) => (
-            <View key={food.id} style={{ width: "48%", marginBottom: 10 }}>
-              <FoodCard food={food} />
+          {products.map((food) => (
+            <View key={food._id} style={{ width: "48%", marginBottom: 10 }}>
+              <ProductCard product={food} />
             </View>
           ))}
         </View>

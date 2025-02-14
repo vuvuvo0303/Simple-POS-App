@@ -1,16 +1,25 @@
-import { View, Text, FlatList, Alert, TextInput, Image, TouchableOpacity } from "react-native";
-import React from "react";
-import useStore from "@/store/food-store";
-import { Food } from "@/types/Food";
+import { View, Text, FlatList, Alert, TextInput, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState } from "react";
+import useStore from "@/store/cart-store";
+import { Product } from "@/types/product";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
+import { Link, router } from "expo-router";
 
 const Cart = () => {
+  const [selectedValue, setSelectedValue] = useState<"cash" | "qr">("cash");
+  const setPaymentMethod = useStore((state) => state.setPaymentMethod);
   const cart = useStore((state) => state.cart);
   const removeFromCart = useStore((state) => state.removeFromCart);
   const updateQuantity = useStore((state) => state.updateQuantity);
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-
+  const options: {
+    label: string;
+    value: "cash" | "qr";
+  }[] = [
+    { label: "Pay by cash", value: "cash" },
+    { label: "Pay via QR", value: "qr" },
+  ];
   const handleRemoveItem = (id: string) => {
     Alert.alert("Remove Item", "Are you sure you want to remove this item from the cart?", [
       { text: "Cancel", style: "cancel" },
@@ -26,13 +35,18 @@ const Cart = () => {
     }
   };
 
-  const renderItem = ({ item }: { item: Food & { quantity: number } }) => (
+  const handleCheckout = () => {
+    setPaymentMethod(selectedValue);
+    router.navigate("/check-out");
+  };
+
+  const renderItem = ({ item }: { item: Product & { quantity: number } }) => (
     <View className="flex-row justify-between items-center border-b p-2">
-      <Image source={{ uri: item.image }} className="w-16 h-16 rounded-lg" />
+      <Image source={{ uri: item.imageUrl }} className="w-16 h-16 rounded-lg" />
       <Text className="text-lg flex-1 ml-2">{item.name}</Text>
       <View className="flex-row items-center gap-2 pl-2">
         <TouchableOpacity
-          onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+          onPress={() => handleUpdateQuantity(item._id, item.quantity - 1)}
           className="bg-red-500 p-2 rounded-lg"
         >
           <Text className="text-white">-</Text>
@@ -41,10 +55,10 @@ const Cart = () => {
           className="border rounded-lg p-1 w-12 text-center"
           keyboardType="numeric"
           value={String(item.quantity)}
-          onChangeText={(text) => handleUpdateQuantity(item.id, Number(text))}
+          onChangeText={(text) => handleUpdateQuantity(item._id, Number(text))}
         />
         <TouchableOpacity
-          onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+          onPress={() => handleUpdateQuantity(item._id, item.quantity + 1)}
           className="bg-green-500 p-2 rounded-lg"
         >
           <Text className="text-white">+</Text>
@@ -64,11 +78,29 @@ const Cart = () => {
         </View>
       ) : (
         <>
-          <FlatList data={cart} keyExtractor={(item) => item.id} renderItem={renderItem} />
-          <Text className={"text-xl font-bold mt-4"}>Total: ${totalPrice.toFixed(2)}</Text>
-          <TouchableOpacity onPress={() => alert("Proceed to checkout")} className="bg-blue-500 p-4 rounded-lg mt-4">
-            <Text className="text-white text-center">Checkout</Text>
-          </TouchableOpacity>
+          <FlatList data={cart} keyExtractor={(item) => item._id} renderItem={renderItem} />
+          <View style={{ paddingBottom: 80 }}>
+            <Text className={"text-xl font-bold mt-4"}>Total: ${totalPrice.toFixed(2)}</Text>
+            <View className="mt-5">
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => setSelectedValue(option.value)}
+                  className={`flex-row items-center mb-2`}
+                >
+                  <View
+                    className={`w-5 h-5 border-2 border-gray-500 rounded-full ${
+                      selectedValue === option.value ? "bg-blue-500" : "bg-white"
+                    }`}
+                  />
+                  <Text className={`ml-2 text-lg`}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={handleCheckout} className="bg-blue-500 p-4 rounded-lg mt-4">
+              <Text className="text-white text-center">Checkout</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </SafeAreaView>

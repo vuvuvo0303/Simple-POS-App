@@ -20,31 +20,27 @@ export const foodData = [
     name: "KFC",
     description: "Delicious cheese pizza with fresh toppings.",
     price: 12.5,
-    image:
-      "",
+    image: "https://order.foodworks.org/assets/img/foodworks/default-menu-image-placeholder.png",
   },
   {
     id: "4",
     name: "Jolibee",
     description: "Delicious cheese pizza with fresh toppings.",
     price: 12.5,
-    image:
-      "",
+    image: "https://order.foodworks.org/assets/img/foodworks/default-menu-image-placeholder.png",
   },
   {
     id: "5",
     name: "KFC",
     description: "Delicious cheese pizza with fresh toppings.",
     price: 12.5,
-    image:
-      "",
+    image: "https://order.foodworks.org/assets/img/foodworks/default-menu-image-placeholder.png",
   },
   {
     id: "6",
     name: "Jolibee",
     description: "Delicious cheese pizza with fresh toppings.",
     price: 12.5,
-    image:
-      "",
+    image: "https://order.foodworks.org/assets/img/foodworks/default-menu-image-placeholder.png",
   },
 ];

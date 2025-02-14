@@ -1,13 +1,16 @@
-import { Food } from "@/types/Food";
+import { Food } from "@/types/product";
 import { create } from "zustand";
-type FoodState = {
+type CartState = {
   cart: (Food & { quantity: number })[];
   addToCart: (foodItem: Food, quantity: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  paymentMethod: "cash" | "qr";
+  setPaymentMethod: (method: "cash" | "qr") => void;
 };
-const useStore = create<FoodState>((set) => ({
+const useCartStore = create<CartState>((set) => ({
   cart: [],
+  paymentMethod: "cash",
   addToCart: (foodItem, quantity) =>
     set((state) => {
       const existingItem = state.cart.find((item) => item.id === foodItem.id);
@@ -28,6 +31,7 @@ const useStore = create<FoodState>((set) => ({
     set((state) => ({
       cart: state.cart.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item)),
     })),
+  setPaymentMethod: (method) => set({ paymentMethod: method }),
 }));
 
-export default useStore;
+export default useCartStore;
