@@ -15,8 +15,14 @@ export const handleApiError = (error: any) => {
 export const getAllOrders = async () => {
   try {
     const { data } = await axiosClient.get(`/orders`);
-    return { error: null, data: data as Order[], success: true };
+    
+    const paidOrders = (data as Order[])
+      .filter(order => order.status === "paid")
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return { error: null, data: paidOrders, success: true };
   } catch (error) {
     return handleApiError(error);
   }
 };
+

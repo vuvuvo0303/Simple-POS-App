@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LineChart } from 'react-native-chart-kit';
 
-const API_URL = 'http://192.168.2.8:5000/api';
+const API_URL = 'http://10.87.17.81:5000/api';
 
 interface TopProduct {
   _id: string;
@@ -67,19 +67,19 @@ export default function Statistic() {
       {/* Summary Cards */}
       <View style={styles.summaryContainer}>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Tổng doanh thu</Text>
+          <Text style={styles.summaryLabel}>Total revenue</Text>
           <Text style={styles.summaryValue}>
             ${statistics.totalRevenue.toFixed(2)}
           </Text>
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Tổng đơn hàng</Text>
+          <Text style={styles.summaryLabel}>Total order</Text>
           <Text style={styles.summaryValue}>{statistics.totalOrders}</Text>
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Trung bình/đơn</Text>
+          <Text style={styles.summaryLabel}>Average/single</Text>
           <Text style={styles.summaryValue}>
             ${statistics.averageOrderValue.toFixed(2)}
           </Text>
@@ -88,7 +88,7 @@ export default function Statistic() {
 
       {/* Revenue Chart */}
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Doanh thu theo ngày</Text>
+        <Text style={styles.chartTitle}>Revenue by day</Text>
         {statistics.dailySales.length > 0 ? (
           <LineChart
             data={chartData}
@@ -114,20 +114,21 @@ export default function Statistic() {
             style={styles.chart}
           />
         ) : (
-          <Text style={styles.noDataText}>Không có dữ liệu</Text>
+          <Text style={styles.noDataText}>no data</Text>
         )}
       </View>
 
       {/* Top Products */}
       <View style={styles.topProductsContainer} >
-        <Text style={styles.sectionTitle}>Top 5 sản phẩm bán chạy</Text>
+        <Text style={styles.sectionTitle}>Top 5 best-selling products</Text>
         {statistics.topProducts.map((product, index) => (
           <View key={product._id} style={styles.productItem}>
             <Text style={styles.productRank}>{index + 1}</Text>
             <View style={styles.productInfo}>
               <Text style={styles.productName}>{product.name}</Text>
               <Text style={styles.productStats}>
-                Đã bán: {product.totalQuantity} | Doanh thu: ${product.totalRevenue.toFixed(2)}
+              Sold: {product.totalQuantity} 
+              {/* |Revenue: ${product.totalRevenue.toFixed(2)} */}
               </Text>
             </View>
           </View>
