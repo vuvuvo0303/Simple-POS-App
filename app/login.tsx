@@ -1,10 +1,12 @@
 import Toast from "react-native-toast-message";
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, Image } from "react-native"; // Thêm Image
 import axios from "axios";
 import * as Location from "expo-location";
+import MapView, { Marker } from "react-native-maps";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
 
 interface LocationData {
   latitude: number;
@@ -18,7 +20,18 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      const locationData = await getLocation();
+      if (locationData) {
+        setCurrentLocation(locationData);
+      }
+    };
+    fetchLocation();
+  }, []);
 
   const getLocation = async (): Promise<LocationData | null> => {
     try {
@@ -83,7 +96,6 @@ export default function Login() {
         await saveLocationHistory(locationData);
         Toast.show({ type: "success", text1: "Success", text2: "Login successful!" });
 
-        // Navigate after a short delay
         setTimeout(() => {
           router.replace("/(tabs)/cart");
         }, 1500);
@@ -96,22 +108,65 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput style={styles.input} placeholder="Username" value={username} onChangeText={setUsername} autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading}>
-        <Text style={styles.loginButtonText}>{isLoading ? "Logging in..." : "Login"}</Text>
+    <View className="flex-1 justify-center p-5 bg-gray-100">
+      {/* Đặt LottieView ở giữa */}
+      <View className="items-center mb-5">
+        <LottieView source={require("@/assets/login.json")} autoPlay loop style={{ width: "40%", height: 100 }} />
+      </View>
+
+      {/* Hiển thị bản đồ nếu có vị trí hiện tại */}
+      {currentLocation && (
+        <MapView
+          style={{ width: "100%", height: 200, marginBottom: 20 }}
+          initialRegion={{
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        >
+          <Marker
+            coordinate={{ latitude: currentLocation.latitude, longitude: currentLocation.longitude }}
+            title="Your Location"
+          />
+        </MapView>
+      )}
+
+      <TextInput
+        className="h-12 border border-gray-400 mb-4 px-3 rounded-md"
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
+      <TextInput
+        className="h-12 border border-gray-400 mb-4 px-3 rounded-md"
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TouchableOpacity
+        className="bg-orange-500 p-4 rounded-md items-center"
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
+        <Text className="text-white font-bold">{isLoading ? "Logging in..." : "Login"}</Text>
       </TouchableOpacity>
+
+      {/* Thêm hình ảnh dưới nút Login */}
+      <View className="flex flex-row items-center justify-center gap-4 pt-24">
+        <Image
+          source={{
+            uri: "https://png.pngtree.com/png-clipart/20210725/original/pngtree-sushi-logo-png-image_6552022.jpg",
+          }}
+          className="w-24 h-24"
+          resizeMode="contain"
+        />
+        <Text className="text-lg pt-2 font-semibold">POS ポイント10 Sushi</Text>
+      </View>
+
       <Toast />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: { height: 50, borderColor: "gray", borderWidth: 1, marginBottom: 15, paddingHorizontal: 10, borderRadius: 5 },
-  loginButton: { backgroundColor: "#007bff", padding: 15, borderRadius: 5, alignItems: "center" },
-  loginButtonText: { color: "white", fontWeight: "bold" },
-});

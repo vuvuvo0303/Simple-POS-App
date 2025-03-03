@@ -27,7 +27,7 @@ const TabNavigator = () => {
               Order: "shoppingcart",
               Statistic: "barschart",
               Orderlist: "profile",
-              LocationHistory: "enviromento",
+              "Location History": "enviromento",
             };
             return <AntDesign name={icons[route.name]} size={size} color={color} />;
           },
@@ -56,7 +56,7 @@ const TabNavigator = () => {
         <Tab.Screen name="Order" component={CartScreen} />
         <Tab.Screen name="Statistic" component={StatisticScreen} />
         <Tab.Screen name="Orderlist" component={OrderListScreen} />
-        <Tab.Screen name="LocationHistory" component={LocationHistory} />
+        <Tab.Screen name="Location History" component={LocationHistory} />
       </Tab.Navigator>
       {/* Hiển thị Toast */}
       <Toast />
